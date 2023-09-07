@@ -1,0 +1,4 @@
+pyqt6>=6.4.2
+pyyaml>=6.0
+pandas>=2.0.3
+adbutils>=1.2.13

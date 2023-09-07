@@ -1,0 +1,34 @@
+AllTestCase:
+  - start: route_ip=$(ip route 2>/dev/null | awk '/via/ {print $3}') && { [ -n "$route_ip" ] && ping -I eth0 -c 5 $route_ip | awk -F' |%' '/packet loss/ {print "loss="$6; exit}' || echo "loss=100"; }
+    enabled: true
+    expected: 20
+    id: 0
+    index: 3
+    name: Ethernet Test
+    key: ethernet
+    type: Automated Test
+  - start: dd if=/dev/zero of=/mnt/udisk/testfile bs=1M count=10 >/dev/null 2>&1 && sync && result=$(dd if=/mnt/udisk/testfile of=/dev/null bs=1M 2>&1) && rm /mnt/udisk/testfile && echo $result
+    enabled: true
+    expected: MB/s
+    id: 1
+    index: 0
+    name: USB Test
+    key: usb
+    type: Automated Test
+  - start: echo 1 >/sys/class/gpio/gpio138/value && echo 1 >/sys/class/gpio/gpio141/value && sleep 0.5 && echo 0 >/sys/class/gpio/gpio138/value && echo 0 >/sys/class/gpio/gpio141/value && sleep 0.5
+    stop: echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value
+    enabled: true
+    id: 2
+    index: 1
+    name: LED Test
+    key: led
+    type: Manual Test
+    tips: Please check if the LED is blinking
+  - start: cat /sys/class/drm/card0-HDMI-A-1/status
+    enabled: true
+    id: 3
+    index: 2
+    name: HDMI Test
+    key: hdmi
+    type: Manual Test
+    tips: Please connect HDMI to see if there is display

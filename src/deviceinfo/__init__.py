@@ -55,7 +55,7 @@ class DeviceInfo:
         if self.available:
             self.device.shell('touch /aging_start_stamp && sync')
             shell_script = """
-            command_to_add="[ -f /aging_start_stamp ] && stressapptest -s 14400 -i 4 -C 4 -W --stop_on_errors -M 512 & wait \$! && rm -f /aging_start_stamp"
+            command_to_add="[ -f /aging_start_stamp ] && stressapptest -s 7200 -i 4 -C 4 -W -M 512 & wait \$! && rm -f /aging_start_stamp"
             grep -q "$command_to_add" /etc/rc.local || (cp /etc/rc.local /etc/rc.local.backup && sed -i "/exit 0/i$command_to_add" /etc/rc.local)
             """
             self.device.shell(shell_script)

@@ -15,15 +15,15 @@ AllTestCase:
     name: USB Test
     key: usb
     type: Automated Test
-  - start: echo 1 >/sys/class/gpio/gpio138/value && echo 1 >/sys/class/gpio/gpio141/value && sleep 0.5 && echo 0 >/sys/class/gpio/gpio138/value && echo 0 >/sys/class/gpio/gpio141/value && sleep 0.5
-    stop: echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value
+  - start: for i in {1..8}; do echo 1 > /sys/class/leds/led_${i}/brightness; done; echo 1 > /sys/class/gpio/gpio138/value; echo 1 > /sys/class/gpio/gpio141/value; sleep 0.5; for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value; sleep 0.5
+    stop: for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value;
     enabled: true
     id: 2
     index: 1
     name: LED Test
     key: led
     type: Manual Test
-    tips: Please check if the LED is blinking
+    tips: Check if the LED is blinking
   - start: cat /sys/class/drm/card0-HDMI-A-1/status
     enabled: true
     id: 3
@@ -31,4 +31,22 @@ AllTestCase:
     name: HDMI Test
     key: hdmi
     type: Manual Test
-    tips: Please connect HDMI to see if there is display
+    tips: Connect HDMI and check for display
+  - start: evtest /dev/input/event0
+    enabled: false
+    id: 4
+    index: 4
+    name: Power Button Test
+    key: key-power
+    type: Manual Test
+    tips: Press the Power button
+    expected: code 87 (KEY_F11), value 1
+  - start: evtest /dev/input/event1
+    enabled: true
+    id: 5
+    index: 5
+    name: Loader Button Test
+    key: key-loader
+    type: Manual Test
+    tips: Press the Loader button
+    expected: code 87 (KEY_F11), value 1

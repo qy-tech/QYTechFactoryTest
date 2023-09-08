@@ -15,8 +15,8 @@ AllTestCase:
     name: USB测试
     key: usb
     type: 自动测试
-  - start: echo 1 >/sys/class/gpio/gpio138/value && echo 1 >/sys/class/gpio/gpio141/value && sleep 0.5 && echo 0 >/sys/class/gpio/gpio138/value && echo 0 >/sys/class/gpio/gpio141/value && sleep 0.5
-    stop: echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value
+  - start: for i in {1..8}; do echo 1 > /sys/class/leds/led_${i}/brightness; done; echo 1 > /sys/class/gpio/gpio138/value; echo 1 > /sys/class/gpio/gpio141/value; sleep 0.5; for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value; sleep 0.5
+    stop: for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value;
     enabled: true
     id: 2
     index: 1

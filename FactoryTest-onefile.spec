@@ -14,7 +14,8 @@ a = Analysis(
         ('translations','translations'),
         ('config','config')
     ],
-    hiddenimports=[],
+    hiddenimports=['scipy._lib.messagestream',
+                    'pandas._libs.tslibs.timedeltas'],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -33,7 +34,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='FactoryTest',
+    name='QYTechFactoryTest',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

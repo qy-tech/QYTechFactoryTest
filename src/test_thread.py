@@ -1,5 +1,7 @@
+import hashlib
 import logging
 import re
+import time
 
 from PyQt6.QtCore import pyqtSignal, QRunnable, QObject
 from adbutils import AdbDevice
@@ -26,7 +28,8 @@ class TestCaseRunnable(QRunnable):
         self.device = device
         self.is_manual_test = testcase['type'] == self.app.tr('手动测试')
         self.expected = testcase.get('expected', None)
-        self.id = str(id(self))
+        # 用作当前测试的唯一标识
+        self.id = hashlib.md5(f'{str(id(self))}_{str(time.time_ns())}'.encode()).hexdigest()[:6]
         self.app.signals.finished.connect(self.terminate)
         self.is_running = True
         logger.debug(f'{self.testcase["name"]} {self.id} is_manual_running {self.is_manual_test}')

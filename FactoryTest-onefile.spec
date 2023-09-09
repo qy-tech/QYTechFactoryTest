@@ -1,21 +1,20 @@
 # -*- mode: python ; coding: utf-8 -*-
 
-
 block_cipher = None
-
 
 a = Analysis(
     ['src\\main.py'],
-    pathex=[
-        'src'
-    ],
+    pathex=['src'],
     binaries=[],
     datas=[
-        ('translations','translations'),
-        ('config','config')
+        ('translations', 'translations'),
+        ('config', 'config'),
+        ('bin', 'bin'),
     ],
-    hiddenimports=['scipy._lib.messagestream',
-                    'pandas._libs.tslibs.timedeltas'],
+    hiddenimports=[
+        'scipy._lib.messagestream',
+        'pandas._libs.tslibs.timedeltas'
+    ],
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],
@@ -25,6 +24,7 @@ a = Analysis(
     cipher=block_cipher,
     noarchive=False,
 )
+
 pyz = PYZ(a.pure, a.zipped_data, cipher=block_cipher)
 
 exe = EXE(

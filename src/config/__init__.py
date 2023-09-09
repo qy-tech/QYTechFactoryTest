@@ -13,14 +13,23 @@ class Config:
         self.names = []
         self.currents = []
         self.selected_items = []
+        self.keys = []
         self.size = -1
 
-    def update_item_enabled(self, names, enabled):
-        for item in self.all_testcase:
-            if item['name'] in names:
-                item['enabled'] = enabled
+    def update_item_status(self, **kwargs):
         self.all_testcase = sorted(self.all_testcase, key=lambda x: x["index"])
-        self.currents = [item for item in self.all_testcase if item['enabled']]
+        self.currents.clear()
+        self.keys.clear()
+        self.names.clear()
+        for item in self.all_testcase:
+            if kwargs:
+                if item['name'] in kwargs.get('names'):
+                    item['enabled'] = kwargs.get('enabled')
+            self.names.append(item['name'])
+            if item['enabled']:
+                self.currents.append(item)
+                self.keys.append(item['key'])
+
         self.size = len(self.currents)
         self.save_config()
 
@@ -37,10 +46,7 @@ class Config:
                 self.data = yaml.safe_load(yaml_file)
                 if 'AllTestCase' in self.data.keys():
                     self.all_testcase = self.data['AllTestCase']
-                    self.all_testcase = sorted(self.all_testcase, key=lambda x: x["index"])
-                    self.names = [item['name'] for item in self.all_testcase]
-                    self.currents = [item for item in self.all_testcase if item['enabled']]
-                    self.size = len(self.currents)
+                    self.update_item_status()
         except FileNotFoundError as e:
             logger.error(e)
 

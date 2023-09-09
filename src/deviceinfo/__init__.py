@@ -1,8 +1,11 @@
 import logging
+import os.path
 import re
 
 import pandas as pd
 from adbutils import adb, AdbDevice
+
+from util import PyInstallerPathUtil
 
 logger = logging.getLogger('root')
 
@@ -51,13 +54,20 @@ class DeviceInfo:
             'Hostname': hostname,
         }
 
-    def save_device_info(self, test_result: dict):
-        if self.available:
+    def save_device_info(self, test_result: dict, is_success):
+        if self.available and is_success:
             self.device.shell('touch /aging_start_stamp && sync')
+            aging_test_src = os.path.join('factorytest_script', 'AgingTest.sh')
+            aging_test_dist = '/usr/share/AgingTest.sh'
+            self.device.sync.push(aging_test_src, aging_test_dist)
+            self.device.shell(f'chmod +x {aging_test_dist}')
+            self.device.shell('sync')
             shell_script = """
-            command_to_add="[ -f /aging_start_stamp ] && stressapptest -s 7200 -i 4 -C 4 -W -M 512 & wait \$! && rm -f /aging_start_stamp"
-            grep -q "$command_to_add" /etc/rc.local || (cp /etc/rc.local /etc/rc.local.backup && sed -i "/exit 0/i$command_to_add" /etc/rc.local)
+            #!/bin/bash
+            command_to_add="[ -f /aging_start_stamp ] && /usr/share/AgingTest.sh"
+            grep -qF "$command_to_add" /etc/rc.local || sed -i '$i'"$command_to_add" /etc/rc.local
             """
+            logger.debug(f'run shell {shell_script}')
             self.device.shell(shell_script)
             self.device_info.update(test_result)
         # 读取已存在的 CSV 文件，如果文件不存在，则创建一个空的 DataFrame

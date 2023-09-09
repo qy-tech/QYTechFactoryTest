@@ -11,6 +11,7 @@ from config import Config
 from config.logger import setup_custom_logger
 from deviceinfo import DeviceInfo
 from main_window import Ui_MainWindow
+from util import PyInstallerPathUtil
 from test_thread import TestCaseRunnable
 
 # 获取默认的根日志记录器
@@ -23,10 +24,10 @@ class MainWindowSignals(QObject):
 
 class MainWindow(QMainWindow, Ui_MainWindow):
 
-    def __init__(self, app, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-        self.bundle_dir = None
-        self.app = app
+        self.bundle_dir = PyInstallerPathUtil.get_pyinstaller_base_path()
+        os.environ['ADBUTILS_ADB_PATH'] = os.path.join(self.bundle_dir, 'bin')
         self.translator = QTranslator()
         self.logs_folder = None
         self.output_folder = None
@@ -50,18 +51,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.timer.start(2000)
         self.setupUi(self)
         self.init_ui()
-        self.update_bundle_dir()
         self.load_language('zh')
         self.update_device_info()
-
-    # noinspection PyUnresolvedReferences,PyProtectedMember
-    def update_bundle_dir(self):
-        if getattr(sys, 'frozen', False):
-            # Running in a PyInstaller bundle
-            self.bundle_dir = sys._MEIPASS
-        else:
-            # Running in a normal Python environment
-            self.bundle_dir = os.path.dirname(os.path.abspath(__file__))
 
     def change_language_english(self):
         self.load_language('en')
@@ -108,7 +99,6 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def load_test_case(self):
         self.listwidget_all_testcase.clear()
         self.listwidget_all_testcase.addItems(self.config.names)
-
         self.update_current_testcase()
 
     def update_current_testcase(self):
@@ -163,10 +153,10 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     self.start_testcase_runnable(item)
             case 'button_test_selected':
                 logger.debug('test selected')
-                self.cancel_all_testcase()
                 self.update_selected_test_names()
                 self.config.update_selected_items(self.selected_test_names)
                 for item in self.config.selected_items:
+                    self.all_test_result.pop(item['key'])
                     self.start_testcase_runnable(item)
             case 'button_manual_test':
                 logger.debug('manual test')
@@ -220,12 +210,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def add_selected_testcase(self):
         names = [item.text() for item in self.listwidget_all_testcase.selectedItems()]
-        self.config.update_item_enabled(names, True)
+        self.config.update_item_status(names=names, enabled=True)
         self.update_current_testcase()
 
     def remove_selected_testcase(self):
         self.update_selected_test_names()
-        self.config.update_item_enabled(self.selected_test_names, False)
+        self.config.update_item_status(names=self.selected_test_names, enabled=False)
         self.update_current_testcase()
 
     def move_selected_rows_up(self):
@@ -285,13 +275,15 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.tablewidget_testcase.setItem(testcase['index'], 2, result_item)
         self.all_test_result[testcase['key']] = passed
         # 更新测试状态
-        if not success:
-            self.all_tests_successful = False
+        self.all_tests_successful = all(value == 'pass' for value in self.all_test_result.values())
 
     def handle_show_messagebox(self, runnable_id, testcase):
         logger.debug(f'handle_show_messagebox {testcase}')
-        reply = QMessageBox.question(self, testcase.get('name'), testcase.get('tips'),
-                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if testcase.get('expected'):
+            reply = QMessageBox.information(self, testcase.get('name'), testcase.get('tips'))
+        else:
+            reply = QMessageBox.question(self, testcase.get('name'), testcase.get('tips'),
+                                         QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
         self.message_responses[runnable_id] = reply == QMessageBox.StandardButton.Yes
 
     def handle_test_finished(self, testcase):
@@ -331,8 +323,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.button_exit_test.setDisabled(False)
 
     def check_all_tests_complete(self):
-        logger.debug(f'{self.all_test_result}')
-        if len(self.all_test_result) == self.config.size:
+        logger.debug(f'check_all_tests_complete {self.all_test_result}')
+        # logger.debug(f'{self.all_test_result} {set(self.all_test_result.keys())} == {set(self.config.keys)}')
+        if set(self.all_test_result.keys()) == set(self.config.keys):
             # 所有测试已完成，检查测试状态
             if self.all_tests_successful:
                 self.update_test_log("All tests completed successfully.")
@@ -342,7 +335,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 # 可以在这里执行失败时的操作，例如显示警告或弹出消息框
                 QMessageBox.warning(self, self.tr('测试结束'), self.tr('部分测试项目失败'))
 
-            self.device.save_device_info(self.all_test_result)
+            self.device.save_device_info(self.all_test_result, self.all_tests_successful)
 
     def init_factory_test(self):
 
@@ -381,7 +374,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 def main():
     app = QApplication(sys.argv)
     app.setStyle('Fusion')
-    window = MainWindow(app)
+    window = MainWindow()
     window.show()
     app.exec()
 

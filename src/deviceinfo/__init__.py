@@ -1,11 +1,9 @@
 import logging
-import os.path
 import re
 
 import pandas as pd
-from adbutils import adb, AdbDevice
 
-from util import PyInstallerPathUtil
+from util import Adb
 
 logger = logging.getLogger('root')
 
@@ -16,13 +14,13 @@ class DeviceInfo:
         # 获取已连接的设备列表
         self.devices = []
         self.device_info = {}
-        self.device: AdbDevice = None
+        self.device = None
         self.size = -1
         self.available = False
         self.update_devices()
 
     def update_devices(self):
-        self.devices = adb.device_list()
+        self.devices = Adb.devices()
         self.size = len(self.devices)
         self.device = self.devices[0] if self.devices else None
         self.available = self.device is not None
@@ -36,16 +34,16 @@ class DeviceInfo:
         :return: sn, mac_address, cpu_id, hostname
         """
         # 获取设备序列号（SN）
-        sn = re.findall(r'sn:\s+(.*?)\s+', self.device.shell('vendor_storage -R -1'), re.S)
-        sn = sn[0] if sn else self.device.serial
+        sn = re.findall(r'sn:\s+(.*?)\s+', Adb.shell('vendor_storage -R -1'), re.S)
+        sn = sn[0] if sn else self.device[0]
         # 获取设备的 MAC 地址
-        mac_address = self.device.shell('cat /sys/class/net/eth0/address').strip()
+        mac_address = Adb.shell('cat /sys/class/net/eth0/address').strip()
         # 获取设备的 CPU ID
         # cpu_id = re.findall(r'Serial(.*?)\s+', device.shell('cat /proc/cpuinfo | grep Serial'))
-        cpu_id = re.findall(r'Serial\s+:\s+(\S+)', self.device.shell('cat /proc/cpuinfo'), re.S)
+        cpu_id = re.findall(r'Serial\s+:\s+(\S+)', Adb.shell('cat /proc/cpuinfo'), re.S)
         cpu_id = cpu_id[0] if cpu_id else 'UNKNOWN'
         # 获取设备的 Hostname
-        hostname = self.device.shell('hostname').strip()
+        hostname = Adb.shell('hostname').strip()
         logger.debug(f'sn: {sn}, cpu_id: {cpu_id}, mac: {mac_address}, hostname: {hostname}')
         self.device_info = {
             'SN': sn,
@@ -56,19 +54,6 @@ class DeviceInfo:
 
     def save_device_info(self, test_result: dict, is_success):
         if self.available and is_success:
-            self.device.shell('touch /aging_start_stamp && sync')
-            aging_test_src = os.path.join('factorytest_script', 'AgingTest.sh')
-            aging_test_dist = '/usr/share/AgingTest.sh'
-            self.device.sync.push(aging_test_src, aging_test_dist)
-            self.device.shell(f'chmod +x {aging_test_dist}')
-            self.device.shell('sync')
-            shell_script = """
-            #!/bin/bash
-            command_to_add="[ -f /aging_start_stamp ] && /usr/share/AgingTest.sh"
-            grep -qF "$command_to_add" /etc/rc.local || sed -i '$i'"$command_to_add" /etc/rc.local
-            """
-            logger.debug(f'run shell {shell_script}')
-            self.device.shell(shell_script)
             self.device_info.update(test_result)
         # 读取已存在的 CSV 文件，如果文件不存在，则创建一个空的 DataFrame
         try:

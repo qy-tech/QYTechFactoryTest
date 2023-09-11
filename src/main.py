@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-from PyQt6.QtCore import QTimer, QThreadPool, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject
+from PyQt6.QtCore import QTimer, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox, QHeaderView
 
@@ -11,8 +11,8 @@ from config import Config
 from config.logger import setup_custom_logger
 from deviceinfo import DeviceInfo
 from main_window import Ui_MainWindow
+from testcase_process import TestCaseProcess, TestCaseProcessManager, Adb
 from util import PyInstallerPathUtil
-from test_thread import TestCaseRunnable
 
 # 获取默认的根日志记录器
 logger = setup_custom_logger('root')
@@ -26,8 +26,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
+
         self.bundle_dir = PyInstallerPathUtil.get_pyinstaller_base_path()
-        os.environ['ADBUTILS_ADB_PATH'] = os.path.join(self.bundle_dir, 'bin')
         self.translator = QTranslator()
         self.logs_folder = None
         self.output_folder = None
@@ -38,12 +38,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.config = Config()
         self.device = DeviceInfo()
         self.timer = QTimer(self)
-        self.message_responses = {}
         self.selected_test_names = []
-        self.threadpool_manual = QThreadPool.globalInstance()
-        self.threadpool_manual.setMaxThreadCount(1)
-        self.threadpool_automatic = QThreadPool()
-        self.threadpool_automatic.setMaxThreadCount(8)
         self.signals = MainWindowSignals()
         # 创建一个 QTimer 对象，并连接到更新状态的槽函数
         self.timer.timeout.connect(self.update_device_info)
@@ -109,7 +104,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             item['index'] = index
             logger.debug(f'current testCase index {index}, item {item}')
             self.tablewidget_testcase.setItem(index, 0, QTableWidgetItem(item['name']))
-            self.tablewidget_testcase.setItem(index, 1, QTableWidgetItem(item['type']))
+            self.tablewidget_testcase.setItem(index, 1, QTableWidgetItem(item['description']))
             self.tablewidget_testcase.setItem(index, 2, QTableWidgetItem('waiting'))
         # 自适应列宽度
         header = self.tablewidget_testcase.horizontalHeader()
@@ -143,6 +138,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.all_test_result.clear()
                 self.enable_buttons()
                 self.init_factory_test()
+                Adb.sync_test_script()
                 logger.debug('start test')
             case 'button_test_all':
                 logger.debug('test all')
@@ -150,14 +146,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.cancel_all_testcase()
                 # 开启多个线程进行测试
                 for item in self.config.currents:
-                    self.start_testcase_runnable(item)
+                    self.init_testcase_process(item)
+
+                TestCaseProcessManager.start_testcase_process()
             case 'button_test_selected':
                 logger.debug('test selected')
                 self.update_selected_test_names()
                 self.config.update_selected_items(self.selected_test_names)
+                TestCaseProcessManager.clear()
                 for item in self.config.selected_items:
                     self.all_test_result.pop(item['key'])
-                    self.start_testcase_runnable(item)
+                    self.init_testcase_process(item)
+                TestCaseProcessManager.start_testcase_process()
             case 'button_manual_test':
                 logger.debug('manual test')
             case 'button_exit_test':
@@ -185,28 +185,23 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_test_log('cancel all test')
 
         self.all_test_result.clear()
-        self.message_responses.clear()
-        # self.threadpool_manual.waitForDone()
-        # self.threadpool_automatic.waitForDone()
-        self.threadpool_manual.clear()
-        self.threadpool_automatic.clear()
+        TestCaseProcessManager.clear()
 
     def update_selected_test_names(self):
         self.selected_test_names = [item.text() for item in self.tablewidget_testcase.selectedItems()
                                     if item.column() == 0]
 
     # noinspection DuplicatedCode
-    def start_testcase_runnable(self, item):
-        runnable = TestCaseRunnable(self, self.device.device, item)
-        runnable.signal.started.connect(self.handle_test_started)
-        runnable.signal.error.connect(self.handle_test_error)
-        runnable.signal.result.connect(self.handle_test_result)
-        runnable.signal.finished.connect(self.handle_test_finished)
-        runnable.signal.show_messagebox.connect(self.handle_show_messagebox)
-        if runnable.is_manual_test:
-            self.threadpool_manual.start(runnable)
+    def init_testcase_process(self, item):
+        process = TestCaseProcess(item)
+        process.started.connect(self.handle_test_started)
+        process.finished.connect(self.handle_test_finished)
+        process.show_messagebox.connect(self.handle_show_messagebox)
+
+        if process.is_manual:
+            TestCaseProcessManager.manual_processes.append(process)
         else:
-            self.threadpool_automatic.start(runnable)
+            TestCaseProcessManager.automated_processes.append(process)
 
     def add_selected_testcase(self):
         names = [item.text() for item in self.listwidget_all_testcase.selectedItems()]
@@ -264,31 +259,27 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.update_test_log(f'{testcase["name"]} start')
         self.tablewidget_testcase.setItem(testcase['index'], 2, QTableWidgetItem('testing'))
 
-    def handle_test_result(self, testcase, success):
-        passed = 'pass' if success else 'failed'
-        self.update_test_log(f'{testcase["name"]} is {passed}')
-        logger.debug(f'testcase {testcase} test result is success {success}')
-        result_item = QTableWidgetItem(passed)
-        result_item.setForeground(Qt.GlobalColor.white)
-        # 绿色 or 红色
-        result_item.setBackground(QColor(89, 158, 94) if success else QColor(181, 71, 71))
-        self.tablewidget_testcase.setItem(testcase['index'], 2, result_item)
-        self.all_test_result[testcase['key']] = passed
-        # 更新测试状态
-        self.all_tests_successful = all(value == 'pass' for value in self.all_test_result.values())
-
-    def handle_show_messagebox(self, runnable_id, testcase):
+    def handle_show_messagebox(self, uuid, testcase):
         logger.debug(f'handle_show_messagebox {testcase}')
         if testcase.get('expected'):
             reply = QMessageBox.information(self, testcase.get('name'), testcase.get('tips'))
         else:
             reply = QMessageBox.question(self, testcase.get('name'), testcase.get('tips'),
                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        self.message_responses[runnable_id] = reply == QMessageBox.StandardButton.Yes
+        TestCaseProcessManager.uuid_manager[uuid] = reply == QMessageBox.StandardButton.Yes
 
-    def handle_test_finished(self, testcase):
-        logger.debug('handle_test_finished')
-        self.update_test_log(f'{testcase["name"]} finish')
+    def handle_test_finished(self, testcase, is_success):
+        passed = 'pass' if is_success else 'failed'
+        self.update_test_log(f'{testcase["name"]} finished with result {passed}')
+        logger.debug(f'{testcase["name"]} finished with result {passed}')
+        result_item = QTableWidgetItem(passed)
+        result_item.setForeground(Qt.GlobalColor.white)
+        # 绿色 or 红色
+        result_item.setBackground(QColor(89, 158, 94) if is_success else QColor(181, 71, 71))
+        self.tablewidget_testcase.setItem(testcase['index'], 2, result_item)
+        self.all_test_result[testcase['key']] = passed
+        # 更新测试状态
+        self.all_tests_successful = all(value == 'pass' for value in self.all_test_result.values())
         self.check_all_tests_complete()  # 在测试完成时检查所有测试是否完成
 
     def handle_test_error(self, testcase, error):
@@ -336,6 +327,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 QMessageBox.warning(self, self.tr('测试结束'), self.tr('部分测试项目失败'))
 
             self.device.save_device_info(self.all_test_result, self.all_tests_successful)
+            Adb.shell(self.config.test_finished)
 
     def init_factory_test(self):
 
@@ -365,7 +357,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         logger.addHandler(file_handler)
 
     def closeEvent(self, event):
-        logger.debug(f'close app {self.threadpool_manual.activeThreadCount()}')
+        logger.debug(f'close app')
         self.signals.finished.emit()
         self.cancel_all_testcase()
         event.accept()

@@ -8,6 +8,7 @@ logger = logging.getLogger('root')
 class Config:
     def __init__(self):
         self.data = None
+        self.test_finished = None
         self.config_file = None
         self.all_testcase = {}
         self.names = []
@@ -47,6 +48,7 @@ class Config:
                 if 'AllTestCase' in self.data.keys():
                     self.all_testcase = self.data['AllTestCase']
                     self.update_item_status()
+                self.test_finished = self.data.get('TestFinished')
         except FileNotFoundError as e:
             logger.error(e)
 

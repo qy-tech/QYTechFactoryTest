@@ -1,61 +1,61 @@
 AllTestCase:
-- enabled: true
+- description: 自动测试
+  enabled: true
   expected: 20
   id: 0
   index: 3
   key: ethernet
   name: 以太网测试
-  start: route_ip=$(ip route 2>/dev/null | awk '/via/ {print $3}') && { [ -n "$route_ip"
-    ] && ping -I eth0 -c 5 $route_ip | awk -F' |%' '/packet loss/ {print "loss="$6;
-    exit}' || echo "loss=100"; }
-  type: 自动测试
-- enabled: true
+  start: /tmp/factorytest_script/factory_test_ethernet.sh
+  type: automated
+- description: 自动测试
+  enabled: true
   expected: MB/s
   id: 1
   index: 0
   key: usb
   name: USB测试
-  start: dd if=/dev/zero of=/mnt/udisk/testfile bs=1M count=10 >/dev/null 2>&1 &&
-    sync && result=$(dd if=/mnt/udisk/testfile of=/dev/null bs=1M 2>&1) && rm /mnt/udisk/testfile
-    && echo $result
-  type: 自动测试
-- enabled: true
+  start: /tmp/factorytest_script/factory_test_usb.sh
+  type: automated
+- description: 手动测试
+  enabled: true
+  expected: null
   id: 2
   index: 1
   key: led
   name: LED测试
-  start: for i in {1..8}; do echo 1 > /sys/class/leds/led_${i}/brightness; done; echo
-    1 > /sys/class/gpio/gpio138/value; echo 1 > /sys/class/gpio/gpio141/value; sleep
-    0.5; for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo
-    0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value; sleep
-    0.5
-  stop: for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo
-    0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value;
+  start: /tmp/factorytest_script/factory_test_led.sh
+  stop: /tmp/factorytest_script/factory_test_close_led.sh
   tips: 请查看LED是否闪烁
-  type: 手动测试
-- enabled: true
+  type: manual
+- description: 手动测试
+  enabled: true
+  expected: null
   id: 3
   index: 2
   key: hdmi
   name: HDMI测试
-  start: cat /sys/class/drm/card0-HDMI-A-1/status
+  start: /tmp/factorytest_script/factory_test_hdmi.sh
   tips: 请连接HDMI查看是否有画面
-  type: 手动测试
-- enabled: false
-  expected: code 87 (KEY_F11), value 1
+  type: manual
+- description: 手动测试
+  enabled: true
+  expected: code 116 (KEY_POWER), value 1
   id: 4
   index: 4
   key: key-power
   name: Power按键测试
-  start: evtest /dev/input/event0
+  start: /tmp/factorytest_script/factory_test_key.sh power
   tips: 请按下Power按键
-  type: 手动测试
-- enabled: true
+  type: manual
+- description: 手动测试
+  enabled: true
   expected: code 87 (KEY_F11), value 1
   id: 5
-  index: 4
+  index: 5
   key: key-loader
   name: Loader按键测试
-  start: evtest /dev/input/event1
+  start: /tmp/factorytest_script/factory_test_key.sh loader
   tips: 请按下Loader按键
-  type: 手动测试
+  type: manual
+TestFinished: /tmp/factorytest_script/factory_test_finished.sh

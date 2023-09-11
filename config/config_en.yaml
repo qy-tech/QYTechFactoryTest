@@ -1,52 +1,61 @@
 AllTestCase:
-  - start: route_ip=$(ip route 2>/dev/null | awk '/via/ {print $3}') && { [ -n "$route_ip" ] && ping -I eth0 -c 5 $route_ip | awk -F' |%' '/packet loss/ {print "loss="$6; exit}' || echo "loss=100"; }
-    enabled: true
-    expected: 20
-    id: 0
-    index: 3
-    name: Ethernet Test
-    key: ethernet
-    type: Automated Test
-  - start: dd if=/dev/zero of=/mnt/udisk/testfile bs=1M count=10 >/dev/null 2>&1 && sync && result=$(dd if=/mnt/udisk/testfile of=/dev/null bs=1M 2>&1) && rm /mnt/udisk/testfile && echo $result
-    enabled: true
-    expected: MB/s
-    id: 1
-    index: 0
-    name: USB Test
-    key: usb
-    type: Automated Test
-  - start: for i in {1..8}; do echo 1 > /sys/class/leds/led_${i}/brightness; done; echo 1 > /sys/class/gpio/gpio138/value; echo 1 > /sys/class/gpio/gpio141/value; sleep 0.5; for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value; sleep 0.5
-    stop: for i in {1..8}; do echo 0 > /sys/class/leds/led_${i}/brightness; done; echo 0 > /sys/class/gpio/gpio138/value; echo 0 > /sys/class/gpio/gpio141/value;
-    enabled: true
-    id: 2
-    index: 1
-    name: LED Test
-    key: led
-    type: Manual Test
-    tips: Check if the LED is blinking
-  - start: cat /sys/class/drm/card0-HDMI-A-1/status
-    enabled: true
-    id: 3
-    index: 2
-    name: HDMI Test
-    key: hdmi
-    type: Manual Test
-    tips: Connect HDMI and check for display
-  - start: evtest /dev/input/event0
-    enabled: false
-    id: 4
-    index: 4
-    name: Power Button Test
-    key: key-power
-    type: Manual Test
-    tips: Press the Power button
-    expected: code 87 (KEY_F11), value 1
-  - start: evtest /dev/input/event1
-    enabled: true
-    id: 5
-    index: 5
-    name: Loader Button Test
-    key: key-loader
-    type: Manual Test
-    tips: Press the Loader button
-    expected: code 87 (KEY_F11), value 1
+- description: Automated test
+  enabled: true
+  expected: 20
+  id: 0
+  index: 3
+  key: ethernet
+  name: Ethernet Test
+  start: /tmp/factorytest_script/factory_test_ethernet.sh
+  type: automated
+- description: Automated test
+  enabled: true
+  expected: MB/s
+  id: 1
+  index: 0
+  key: usb
+  name: USB Test
+  start: /tmp/factorytest_script/factory_test_usb.sh
+  type: automated
+- description: Manual test
+  enabled: true
+  expected: null
+  id: 2
+  index: 1
+  key: led
+  name: LED Test
+  start: /tmp/factorytest_script/factory_test_led.sh
+  stop: /tmp/factorytest_script/factory_test_close_led.sh
+  tips: Check if the LED is blinking
+  type: manual
+- description: Manual test
+  enabled: true
+  expected: null
+  id: 3
+  index: 2
+  key: hdmi
+  name: HDMI Test
+  start: /tmp/factorytest_script/factory_test_hdmi.sh
+  tips: Connect HDMI and check for a display
+  type: manual
+- description: Manual test
+  enabled: true
+  expected: code 116 (KEY_POWER), value 1
+  id: 4
+  index: 4
+  key: key-power
+  name: Power Button Test
+  start: /tmp/factorytest_script/factory_test_key.sh power
+  tips: Press the Power button
+  type: manual
+- description: Manual test
+  enabled: true
+  expected: code 87 (KEY_F11), value 1
+  id: 5
+  index: 5
+  key: key-loader
+  name: Loader Button Test
+  start: /tmp/factorytest_script/factory_test_key.sh loader
+  tips: Press the Loader button
+  type: manual
+TestFinished: /tmp/factorytest_script/factory_test_finished.sh

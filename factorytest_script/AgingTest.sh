@@ -43,6 +43,9 @@ fi
 MEMORY_SIZE_MB=512         # 内存大小（MB）
 TEST_DURATION_SECONDS=7200 # 测试持续时间（2小时）
 
+runtime_seconds=0          # 初始化运行时间为0
+
+
 # 解析命令行参数
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -84,8 +87,11 @@ while true; do
     if ps -p $pid_cpu_test >/dev/null; then
         # 计算CPU测试运行时间
         echo "CPU test is running." >>"$TEST_LOG_AGINGTEST"
-        runtime_seconds=$(ps -o etimes= -p "$pid_cpu_test")
-        echo "CPU test runtime $runtime_seconds" >>"$TEST_LOG_AGINGTEST"
+        cup_test_time=$(ps -o etimes= -p "$pid_cpu_test")
+        echo "CPU test runtime $cup_test_time" >>"$TEST_LOG_AGINGTEST"
+        if [ -n "$cup_test_time" ]; then
+            runtime_seconds=$cup_test_time
+        fi
         echo 1 >$GREEN_LED
         sleep 1
         echo 0 >$GREEN_LED

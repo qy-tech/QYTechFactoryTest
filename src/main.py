@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-from PyQt6.QtCore import QTimer, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject
+from PyQt6.QtCore import QTimer, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject, QEventLoop
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox, QHeaderView
 
@@ -12,6 +12,7 @@ from config.logger import setup_custom_logger
 from deviceinfo import DeviceInfo
 from main_window import Ui_MainWindow
 from testcase_process import TestCaseProcess, TestCaseProcessManager, Adb
+from toast import Toast
 from util import PyInstallerPathUtil
 
 # 获取默认的根日志记录器
@@ -262,11 +263,12 @@ class MainWindow(QMainWindow, Ui_MainWindow):
     def handle_show_messagebox(self, uuid, testcase):
         logger.debug(f'handle_show_messagebox {testcase}')
         if testcase.get('expected'):
-            reply = QMessageBox.information(self, testcase.get('name'), testcase.get('tips'))
+            # reply = QMessageBox.information(self, testcase.get('name'), testcase.get('tips'))
+            Toast.show_message(self, testcase['tips'])
         else:
             reply = QMessageBox.question(self, testcase.get('name'), testcase.get('tips'),
                                          QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
-        TestCaseProcessManager.uuid_manager[uuid] = reply == QMessageBox.StandardButton.Yes
+            TestCaseProcessManager.uuid_manager[uuid] = reply == QMessageBox.StandardButton.Yes
 
     def handle_test_finished(self, testcase, is_success):
         passed = 'pass' if is_success else 'failed'
@@ -305,7 +307,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             return
 
         if not self.device_number == 1:
-            QMessageBox.warning(self, self.tr('设备断开连接'), self.tr('设备已断开连接，请重新连接设备'))
+            # QMessageBox.warning(self, self.tr('设备断开连接'), self.tr('设备已断开连接，请重新连接设备'))
+            Toast.show_message(self, self.tr('设备已断开连接，请重新连接设备'))
             return
 
         self.button_test_all.setDisabled(False)
@@ -320,12 +323,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
             # 所有测试已完成，检查测试状态
             if self.all_tests_successful:
                 self.update_test_log("All tests completed successfully.")
-                QMessageBox.information(self, self.tr('测试结束'), self.tr('测试成功'))
+                # QMessageBox.information(self, self.tr('测试结束'), self.tr('测试成功'))
+                Toast.show_message(self, self.tr('测试成功'))
             else:
                 self.update_test_log("Some tests failed.")
                 # 可以在这里执行失败时的操作，例如显示警告或弹出消息框
-                QMessageBox.warning(self, self.tr('测试结束'), self.tr('部分测试项目失败'))
-
+                # QMessageBox.warning(self, self.tr('测试结束'), self.tr('部分测试项目失败'))
+                Toast.show_message(self, self.tr('部分测试项目失败'))
             self.device.save_device_info(self.all_test_result, self.all_tests_successful)
             Adb.shell(self.config.test_finished)
 

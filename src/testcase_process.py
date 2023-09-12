@@ -104,14 +104,9 @@ class TestCaseProcess(QObject):
         """
         # 根据是否是手动测试和是否有期望值来决定启动流程
         if self.is_manual:
-            if self.expected:
-                # 弹出消息框等待用户确认，然后启动测试
-                self.show_messagebox.emit(self.uuid, self.testcase)
-                self.process.start(Adb.adb_path, ['shell', self.testcase['start']])
-            else:
-                # 先启动测试，然后弹出消息框等待用户确认
-                self.process.start(Adb.adb_path, ['shell', self.testcase['start']])
-                self.show_messagebox.emit(self.uuid, self.testcase)
+            # 先启动测试，然后弹出消息框等待用户确认
+            self.process.start(Adb.adb_path, ['shell', self.testcase['start']])
+            self.show_messagebox.emit(self.uuid, self.testcase)
         else:
             # 自动测试，直接启动测试
             self.process.start(Adb.adb_path, ['shell', self.testcase['start']])

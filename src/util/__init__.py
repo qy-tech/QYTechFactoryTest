@@ -68,6 +68,6 @@ class Adb:
 
     @staticmethod
     def sync_test_script():
-        Adb.push('factorytest_script', '/tmp')
-        Adb.shell('chmod 777 -R /tmp/factorytest_script')
+        Adb.push('factorytest_bin', '/tmp')
+        Adb.shell('chmod 777 -R /tmp/factorytest_bin')
         Adb.shell('sync')

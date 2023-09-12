@@ -6,7 +6,7 @@ AllTestCase:
   index: 3
   key: ethernet
   name: Ethernet Test
-  start: /tmp/factorytest_script/factory_test_ethernet.sh
+  start: /tmp/factorytest_bin/factory_test_ethernet
   type: automated
 - description: Automated test
   enabled: true
@@ -15,7 +15,7 @@ AllTestCase:
   index: 0
   key: usb
   name: USB Test
-  start: /tmp/factorytest_script/factory_test_usb.sh
+  start: /tmp/factorytest_bin/factory_test_usb
   type: automated
 - description: Manual test
   enabled: true
@@ -24,8 +24,8 @@ AllTestCase:
   index: 1
   key: led
   name: LED Test
-  start: /tmp/factorytest_script/factory_test_led.sh
-  stop: /tmp/factorytest_script/factory_test_close_led.sh
+  start: /tmp/factorytest_bin/factory_test_led
+  stop: /tmp/factorytest_bin/factory_test_close_led
   tips: Check if the LED is blinking
   type: manual
 - description: Manual test
@@ -35,7 +35,7 @@ AllTestCase:
   index: 2
   key: hdmi
   name: HDMI Test
-  start: /tmp/factorytest_script/factory_test_hdmi.sh
+  start: /tmp/factorytest_bin/factory_test_hdmi
   tips: Connect HDMI and check for a display
   type: manual
 - description: Manual test
@@ -45,7 +45,7 @@ AllTestCase:
   index: 4
   key: key-power
   name: Power Button Test
-  start: /tmp/factorytest_script/factory_test_key.sh power
+  start: /tmp/factorytest_bin/factory_test_key power
   tips: Press the Power button
   type: manual
 - description: Manual test
@@ -55,7 +55,7 @@ AllTestCase:
   index: 5
   key: key-loader
   name: Loader Button Test
-  start: /tmp/factorytest_script/factory_test_key.sh loader
+  start: /tmp/factorytest_bin/factory_test_key loader
   tips: Press the Loader button
   type: manual
-TestFinished: /tmp/factorytest_script/factory_test_finished.sh
+TestFinished: /tmp/factorytest_bin/factory_test_finished

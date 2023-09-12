@@ -11,10 +11,10 @@
 
 # 文件和目录路径
 AGING_STAMP=/aging_start_stamp
-AGING_SCRIPT_SRC=/tmp/factorytest_script/AgingTest.sh
-AGING_SCRIPT_DEST=/usr/share/AgingTest.sh
-USB_CONFIG_SRC=/tmp/factorytest_script/usb_config.sh
-USB_CONFIG_DEST=/usr/bin/usb_config.sh
+AGING_SCRIPT_SRC=/tmp/factorytest_bin/AgingTest
+AGING_SCRIPT_DEST=/usr/share/AgingTest
+USB_CONFIG_SRC=/tmp/factorytest_bin/usb_config
+USB_CONFIG_DEST=/usr/bin/usb_config
 UDEV_RULES_SRC=/tmp/factorytest_script/99-usb-config.rules
 UDEV_RULES_DEST=/etc/udev/rules.d/99-usb-config.rules
 RC_LOCAL_FILE=/etc/rc.local

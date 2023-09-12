@@ -1,1 +1,1 @@
-SUBSYSTEMS=="usb", ACTION=="add", KERNEL=="sd*[!0-9]", RUN+="/usr/bin/usb_config.sh %k"
+SUBSYSTEMS=="usb", ACTION=="add", KERNEL=="sd*[!0-9]", RUN+="/usr/bin/usb_config %k"

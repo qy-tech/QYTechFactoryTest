@@ -6,7 +6,7 @@ AllTestCase:
   index: 3
   key: ethernet
   name: 以太网测试
-  start: /tmp/factorytest_script/factory_test_ethernet.sh
+  start: /tmp/factorytest_bin/factory_test_ethernet
   type: automated
 - description: 自动测试
   enabled: true
@@ -15,7 +15,7 @@ AllTestCase:
   index: 0
   key: usb
   name: USB测试
-  start: /tmp/factorytest_script/factory_test_usb.sh
+  start: /tmp/factorytest_bin/factory_test_usb
   type: automated
 - description: 手动测试
   enabled: true
@@ -24,8 +24,8 @@ AllTestCase:
   index: 1
   key: led
   name: LED测试
-  start: /tmp/factorytest_script/factory_test_led.sh
-  stop: /tmp/factorytest_script/factory_test_close_led.sh
+  start: /tmp/factorytest_bin/factory_test_led
+  stop: /tmp/factorytest_bin/factory_test_close_led
   tips: 请查看LED是否闪烁
   type: manual
 - description: 手动测试
@@ -35,7 +35,7 @@ AllTestCase:
   index: 2
   key: hdmi
   name: HDMI测试
-  start: /tmp/factorytest_script/factory_test_hdmi.sh
+  start: /tmp/factorytest_bin/factory_test_hdmi
   tips: 请连接HDMI查看是否有画面
   type: manual
 - description: 手动测试
@@ -45,7 +45,7 @@ AllTestCase:
   index: 4
   key: key-power
   name: Power按键测试
-  start: /tmp/factorytest_script/factory_test_key.sh power
+  start: /tmp/factorytest_bin/factory_test_key power
   tips: 请按下Power按键
   type: manual
 - description: 手动测试
@@ -55,7 +55,7 @@ AllTestCase:
   index: 5
   key: key-loader
   name: Loader按键测试
-  start: /tmp/factorytest_script/factory_test_key.sh loader
+  start: /tmp/factorytest_bin/factory_test_key loader
   tips: 请按下Loader按键
   type: manual
-TestFinished: /tmp/factorytest_script/factory_test_finished.sh
+TestFinished: /tmp/factorytest_bin/factory_test_finished

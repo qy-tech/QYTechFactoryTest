@@ -69,6 +69,9 @@ Copy-Item -Path "config" -Destination $target_folder -Recurse
 Write-Host "Copying factory test binary folder (factorytest_bin) to $target_folder..."
 Copy-Item -Path "factorytest_bin" -Destination $target_folder -Recurse
 
+# 复制文档
+Copy-Item -Path "docs/README.pdf" -Destination $target_folder
+
 if ($spec_file -eq "FactoryTest-onefile.spec") {
     Write-Host "Copying executable file in single-file mode (dist/$DIST_NAME) to $target_folder..."
     Copy-Item -Path "dist/$DIST_NAME.exe" -Destination $target_folder
@@ -76,6 +79,14 @@ if ($spec_file -eq "FactoryTest-onefile.spec") {
 elseif ($spec_file -eq "FactoryTest-onedir.spec") {
     Write-Host "Copying executable file in directory mode (dist/$DIST_NAME) to $target_folder/$DIST_NAME..."
     Copy-Item -Path "dist\$DIST_NAME\*" -Destination $target_folder -Recurse -Force
+}
+
+# 将打包后的文件用7z压缩并删除中间文件夹
+7z a -r "$target_folder.7z" "./$target_folder/*"
+
+if (Test-Path $target_folder -PathType Container) {
+    Write-Host "Deleting existing target folder: $target_folder..."
+    Remove-Item $target_folder -Recurse -Force
 }
 
 # 停用虚拟环境

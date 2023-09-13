@@ -63,12 +63,24 @@ xcopy /s /e /i /y "config" "%target_folder%\config"
 echo Copying factory test binary folder (factorytest_bin) to %target_folder%...
 xcopy /s /e /i /y "factorytest_bin" "%target_folder%\factorytest_bin"
 
+:: 复制文档
+copy /y "docs/README.pdf" "%target_folder%"
+
 if "%spec_file%"=="FactoryTest-onefile.spec" (
     echo Copying executable file in single-file mode 
     copy "dist\%DIST_NAME%.exe" "%target_folder%" /y
 ) else if "%spec_file%"=="FactoryTest-onedir.spec" (
     echo Copying executable file in directory mode 
     xcopy /s /e /i /y "dist\%DIST_NAME%" "%target_folder%"
+)
+
+:: 将打包后的文件用7z压缩并删除中间文件夹
+7z a -r "%target_folder%.7z" "./%target_folder%/*"
+
+:: 检查目标文件夹是否存在，如果存在则删除
+if exist "%target_folder%" (
+    echo Deleting existing target folder: %target_folder%...
+    rmdir /s /q "%target_folder%"
 )
 
 :: 停用虚拟环境

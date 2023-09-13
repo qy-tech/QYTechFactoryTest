@@ -77,12 +77,23 @@ cp -r config "$target_folder"
 echo "Copying factory test binary folder (factorytest_bin) to $target_folder..."
 cp -r factorytest_bin "$target_folder"
 
+# 复制文档
+cp "docs/README.pdf" "$target_folder"
+
 if [ "$spec_file" == "FactoryTest-onefile.spec" ]; then
     echo "Copying executable file in single-file mode (dist/$DIST_NAME) to $target_folder..."
     cp "dist/$DIST_NAME" "$target_folder"
 elif [ "$spec_file" == "FactoryTest-onedir.spec" ]; then
     echo "Copying executable file in directory mode (dist/$DIST_NAME) to $target_folder/$DIST_NAME..."
     cp -r "dist/$DIST_NAME/"* "$target_folder"
+fi
+
+# 将打包后的文件用7z压缩并删除中间文件夹
+7z a -r "$target_folder.7z" "./$target_folder/*"
+
+if [ -d "$target_folder" ]; then
+    echo "Deleting existing target folder: $target_folder..."
+    rm -rf "$target_folder"
 fi
 
 # 停用虚拟环境

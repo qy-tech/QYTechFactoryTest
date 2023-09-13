@@ -325,13 +325,13 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.update_test_log("All tests completed successfully.")
                 # QMessageBox.information(self, self.tr('测试结束'), self.tr('测试成功'))
                 Toast.show_message(self, self.tr('测试成功'))
+                Adb.shell(self.config.test_finished)
             else:
                 self.update_test_log("Some tests failed.")
                 # 可以在这里执行失败时的操作，例如显示警告或弹出消息框
                 # QMessageBox.warning(self, self.tr('测试结束'), self.tr('部分测试项目失败'))
                 Toast.show_message(self, self.tr('部分测试项目失败'))
             self.device.save_device_info(self.all_test_result, self.all_tests_successful)
-            Adb.shell(self.config.test_finished)
 
     def init_factory_test(self):
 

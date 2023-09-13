@@ -13,6 +13,8 @@ if (Test-Path $folder_to_delete -PathType Container) {
 Write-Host "Pushing factorytest_script to the device..."
 
 # factorytest_script推送到设备
+adb shell "rm -rf /tmp/factorytest_bin"
+
 adb push factorytest_script /tmp
 
 Write-Host "Executing factory_test_packer.sh on the device..."

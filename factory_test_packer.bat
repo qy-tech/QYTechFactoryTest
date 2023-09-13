@@ -15,6 +15,8 @@ if exist "%folder_to_delete%" (
 echo Pushing factorytest_script to the device...
 
 REM factorytest_script推送到设备
+adb shell "rm -rf /tmp/factorytest_bin"
+
 adb push factorytest_script /tmp
 
 echo Executing factory_test_packer.sh on the device...

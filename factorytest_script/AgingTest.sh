@@ -114,8 +114,6 @@ if [ "$runtime_seconds" -ge $((TEST_DURATION_SECONDS - 10)) ]; then
     echo 0 >$RED_LED
     rm -f $AGING_ENABLED_FILE
 
-    echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode
-
     # 要添加到 /etc/rc.local 的命令
     otg_mode_host="echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode"
 
@@ -124,6 +122,8 @@ if [ "$runtime_seconds" -ge $((TEST_DURATION_SECONDS - 10)) ]; then
         # 使用 sed 在 /etc/rc.local 的末尾添加命令
         sed -i "\$i$otg_mode_host" "$RC_LOCAL_FILE" && echo "Command added to $RC_LOCAL_FILE"
     fi
+    echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode
+
 else
     echo "CPU test Failed" >>"$TEST_LOG_AGINGTEST"
     # 测试失败：亮红灯

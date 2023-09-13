@@ -77,7 +77,6 @@ if [[ "$AGINGTEST_ENABLED" == true ]]; then
     # 同步文件系统
     sync && echo "Filesystem synced"
 else
-    echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode
 
     # 要添加到 /etc/rc.local 的命令
     OTG_MODE_HOST="echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode"
@@ -87,6 +86,7 @@ else
         # 使用 sed 在 /etc/rc.local 的末尾添加命令
         sed -i "\$i$OTG_MODE_HOST" "$RC_LOCAL_FILE" && echo "Command added to $RC_LOCAL_FILE"
     fi
+    echo host >/sys/devices/platform/fe8a0000.usb2-phy/otg_mode
 fi
 
 # 打印完成消息

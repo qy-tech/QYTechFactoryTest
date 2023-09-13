@@ -27,6 +27,8 @@ echo Pulling the generated factorytest_bin folder back to the local machine...
 REM 将生成的 factorytest_bin 文件夹pull到本地
 adb pull /tmp/factorytest_bin .
 
+copy factorytest_script\99-usb-config.rules factorytest_bin
+
 echo Cleaning up temporary files on the device...
 
 REM 删除临时文件

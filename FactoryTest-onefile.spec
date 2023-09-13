@@ -3,12 +3,11 @@
 block_cipher = None
 
 a = Analysis(
-    ['src\\main.py'],
+    ['src/main.py'],
     pathex=['src'],
     binaries=[],
     datas=[
         ('translations', 'translations'),
-        ('config', 'config'),
         ('bin', 'bin'),
     ],
     hiddenimports=[

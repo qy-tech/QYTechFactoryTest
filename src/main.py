@@ -131,56 +131,56 @@ class MainWindow(QMainWindow, Ui_MainWindow):
 
     def button_click_listener(self):
         sender_id = self.sender().objectName()
-        match sender_id:
-            case 'button_start_test':
-                self.update_test_log('init factory test')
-                self.is_initialized = True
-                self.all_tests_successful = True
-                self.all_test_result.clear()
-                self.enable_buttons()
-                self.init_factory_test()
-                Adb.sync_test_script()
-                logger.debug('start test')
-            case 'button_test_all':
-                logger.debug('test all')
-                self.update_test_log('start all test')
-                self.cancel_all_testcase()
-                # 开启多个线程进行测试
-                for item in self.config.currents:
-                    self.init_testcase_process(item)
 
-                TestCaseProcessManager.start_testcase_process()
-            case 'button_test_selected':
-                logger.debug('test selected')
-                self.update_selected_test_names()
-                self.config.update_selected_items(self.selected_test_names)
-                TestCaseProcessManager.clear()
-                for item in self.config.selected_items:
-                    self.all_test_result.pop(item['key'])
-                    self.init_testcase_process(item)
-                TestCaseProcessManager.start_testcase_process()
-            case 'button_manual_test':
-                logger.debug('manual test')
-            case 'button_exit_test':
-                self.is_initialized = False
-                self.update_test_log('exit factory test')
-                self.disable_buttons()
-                self.cancel_all_testcase()
-                logger.debug('exit test')
-            case 'button_move_up':
-                logger.debug('↑')
-                self.move_selected_rows_up()
-            case 'button_move_down':
-                logger.debug('↓')
-                self.move_selected_rows_down()
-            case 'button_remove_testcase':
-                logger.debug(f'remove test case')
-                self.remove_selected_testcase()
-            case 'button_add_testcase':
-                logger.debug(f'add test case')
-                self.add_selected_testcase()
-            case _:
-                logger.debug(f'{sender_id} To be realized')
+        if sender_id == 'button_start_test':
+            self.update_test_log('init factory test')
+            self.is_initialized = True
+            self.all_tests_successful = True
+            self.all_test_result.clear()
+            self.enable_buttons()
+            self.init_factory_test()
+            Adb.sync_test_script()
+            logger.debug('start test')
+        elif sender_id == 'button_test_all':
+            logger.debug('test all')
+            self.update_test_log('start all test')
+            self.cancel_all_testcase()
+            # 开启多个线程进行测试
+            for item in self.config.currents:
+                self.init_testcase_process(item)
+
+            TestCaseProcessManager.start_testcase_process()
+        elif sender_id == 'button_test_selected':
+            logger.debug('test selected')
+            self.update_selected_test_names()
+            self.config.update_selected_items(self.selected_test_names)
+            TestCaseProcessManager.clear()
+            for item in self.config.selected_items:
+                self.all_test_result.pop(item['key'])
+                self.init_testcase_process(item)
+            TestCaseProcessManager.start_testcase_process()
+        elif sender_id == 'button_manual_test':
+            logger.debug('manual test')
+        elif sender_id == 'button_exit_test':
+            self.is_initialized = False
+            self.update_test_log('exit factory test')
+            self.disable_buttons()
+            self.cancel_all_testcase()
+            logger.debug('exit test')
+        elif sender_id == 'button_move_up':
+            logger.debug('↑')
+            self.move_selected_rows_up()
+        elif sender_id == 'button_move_down':
+            logger.debug('↓')
+            self.move_selected_rows_down()
+        elif sender_id == 'button_remove_testcase':
+            logger.debug(f'remove test case')
+            self.remove_selected_testcase()
+        elif sender_id == 'button_add_testcase':
+            logger.debug(f'add test case')
+            self.add_selected_testcase()
+        else:
+            logger.debug(f'{sender_id} To be realized')
 
     def cancel_all_testcase(self):
         self.update_test_log('cancel all test')

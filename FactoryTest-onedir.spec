@@ -3,14 +3,13 @@
 block_cipher = None
 
 a = Analysis(
-    ['src\\main.py'],
+    ['src/main.py'],
     pathex=[
         'src'
     ],
     binaries=[],
     datas=[
         ('translations', 'translations'),
-        ('config', 'config'),
         ('bin', 'bin'),
     ],
     hiddenimports=[
@@ -34,12 +33,12 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='main',
+    name='QYTechFactoryTest',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
     upx=True,
-    console=True,
+    console=False,
     disable_windowed_traceback=False,
     argv_emulation=False,
     target_arch=None,

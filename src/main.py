@@ -3,7 +3,7 @@ import os
 import sys
 from datetime import datetime
 
-from PyQt6.QtCore import QTimer, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject, QEventLoop
+from PyQt6.QtCore import QTimer, Qt, QTranslator, QCoreApplication, pyqtSignal, QObject
 from PyQt6.QtGui import QColor
 from PyQt6.QtWidgets import QApplication, QMainWindow, QTableWidgetItem, QMessageBox, QHeaderView
 
@@ -127,7 +127,9 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 self.disable_buttons()  # 无设备连接时禁用按钮
                 self.update_test_log('device disconnected')
                 self.cancel_all_testcase()
+
             self.device_number = self.device.size
+            self.update_info_display()
 
     def button_click_listener(self):
         sender_id = self.sender().objectName()
@@ -300,6 +302,16 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.signals.finished.emit()
         for index, _ in enumerate(self.config.currents):
             self.tablewidget_testcase.setItem(index, 2, QTableWidgetItem('waiting'))
+
+    def update_info_display(self):
+        if self.device_number == 1:
+            self.label_sn.show()
+            self.label_mac.show()
+            self.label_sn.setText(f'SN: {self.device.device_info["SN"]}')
+            self.label_mac.setText(f'MAC: {self.device.device_info["MAC Address"]}')
+        else:
+            self.label_sn.hide()
+            self.label_mac.hide()
 
     def enable_buttons(self):
         # 启用需要启用的按钮

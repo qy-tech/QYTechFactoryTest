@@ -79,6 +79,7 @@ cp -r factorytest_bin "$target_folder"
 
 # 复制文档
 cp "docs/README.pdf" "$target_folder"
+cp "docs/changelog.pdf" "$target_folder"
 
 if [ "$spec_file" == "FactoryTest-onefile.spec" ]; then
     echo "Copying executable file in single-file mode (dist/$DIST_NAME) to $target_folder..."

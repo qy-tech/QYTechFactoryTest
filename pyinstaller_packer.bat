@@ -65,6 +65,7 @@ xcopy /s /e /i /y "factorytest_bin" "%target_folder%\factorytest_bin"
 
 :: 复制文档
 copy /y "docs/README.pdf" "%target_folder%"
+copy /y "docs/changelog.pdf" "%target_folder%"
 
 if "%spec_file%"=="FactoryTest-onefile.spec" (
     echo Copying executable file in single-file mode 

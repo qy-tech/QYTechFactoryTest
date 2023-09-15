@@ -124,7 +124,7 @@
             <property name="font">
              <font>
               <family>宋体</family>
-              <pointsize>20</pointsize>
+              <pointsize>22</pointsize>
               <weight>75</weight>
               <bold>true</bold>
              </font>
@@ -187,6 +187,12 @@
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
+              </property>
+              <property name="font">
+               <font>
+                <family>宋体</family>
+                <pointsize>18</pointsize>
+               </font>
               </property>
               <property name="text">
                <string>提示信息</string>
@@ -494,6 +500,32 @@
              </spacer>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_sn">
+            <property name="font">
+             <font>
+              <family>宋体</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>SN: </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_mac">
+            <property name="font">
+             <font>
+              <family>宋体</family>
+              <pointsize>18</pointsize>
+             </font>
+            </property>
+            <property name="text">
+             <string>MAC:</string>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QTableWidget" name="tablewidget_testcase">

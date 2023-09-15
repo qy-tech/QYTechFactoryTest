@@ -71,6 +71,7 @@ Copy-Item -Path "factorytest_bin" -Destination $target_folder -Recurse
 
 # 复制文档
 Copy-Item -Path "docs/README.pdf" -Destination $target_folder
+Copy-Item -Path "docs/changelog.pdf" -Destination $target_folder
 
 if ($spec_file -eq "FactoryTest-onefile.spec") {
     Write-Host "Copying executable file in single-file mode (dist/$DIST_NAME) to $target_folder..."
